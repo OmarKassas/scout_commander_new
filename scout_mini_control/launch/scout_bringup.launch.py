@@ -39,7 +39,7 @@ def generate_launch_description():
     localization = LaunchConfiguration('localization')
     use_sim_time = LaunchConfiguration('use_sim_time')
     database_path = LaunchConfiguration('database_path')
-    rtabmap_args = LaunchConfiguration('rtabmap_args')
+    #rtabmap_args = LaunchConfiguration('rtabmap_args')
 
     # Declaring Launch Arguments
     declare_ekf_params = DeclareLaunchArgument(
@@ -61,15 +61,15 @@ def generate_launch_description():
     
     declare_database_path_cmd = DeclareLaunchArgument(
         'database_path',
-        default_value='/maps/rtabmap.db',
-        description= 'Where the map is saved and loaded'
+        default_value=os.path.join(scout_mini_control_dir, 'maps', 'map.db'),
+        description='Where the map is saved and loaded'
     )
 
-    declare_rtabmap_args_cmd = DeclareLaunchArgument(
-        'rtabmap_args',
-        default_value='',
-        description= 'RTABMap specific args to pass through (ex. --delete_db_on_start)'
-    )
+    #declare_rtabmap_args_cmd = DeclareLaunchArgument(
+    #    'rtabmap_args',
+    #    default_value='',
+    #    description= 'RTABMap specific args to pass through (ex. --delete_db_on_start)'
+    #)
 
     # Robot Description File
     xacro_file = os.path.join(
@@ -94,7 +94,17 @@ def generate_launch_description():
                 executable='robot_state_publisher',
                 name='robot_state_publisher',
                 parameters=[robot_description_param]),
-
+ 
+            Node(
+                package='slam_toolbox',
+                executable='sync_slam_toolbox_node',
+                name='slam_toolbox',
+                output='screen',
+                parameters=[
+                    os.path.join(scout_mini_control_dir, 'params', 'slam_toolbox_params.yaml'),
+                    {'use_sim_time': use_sim_time, 'database_path': database_path}
+                ]
+            ),
             # Node(
             #     package='robot_localization',
             #     executable='ekf_node',
@@ -103,31 +113,31 @@ def generate_launch_description():
             #     parameters=[ekf_params]),
             #EKF NODE HAS BEEN CAUSING BAD DRIFTING PROBLEMS
 
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([
-                    PathJoinSubstitution([
-                        FindPackageShare('rtabmap_launch'),
-                        'launch', 'rtabmap.launch.py',
-                    ])]),
-                launch_arguments={
-                    'use_sim_time' : use_sim_time,
-                    'rtabmap_args' : rtabmap_args,
-                    'database_path' : database_path,
-                    'rgb_topic' : '/scout_mini/zed_node/rgb/image_rect_color',
-                    'depth_topic' : '/scout_mini/zed_node/depth/depth_registered',
-                    'camera_info_topic' : '/scout_mini/zed_node/rgb/camera_info',
-                    'frame_id' : 'base_footprint',
-                    'approx_sync' : 'true',
-                    'wait_imu_to_init' : 'false',
-                    'wait_for_transform' : '0.2',
-                    'imu_topic' : '/scout_mini/zed_node/imu/data',
-                    'odom_frame_id' : 'odom',
-                    'qos' : '2',
-                    'rtabmapviz' : 'false',
-                    'rviz' : 'false',
-                    'sync_queue_size' : '20',
-                    'topic_queue_size' : '20',
-                    'localization' : localization}.items()),
+            # IncludeLaunchDescription(
+            #     PythonLaunchDescriptionSource([
+            #         PathJoinSubstitution([
+            #             FindPackageShare('rtabmap_launch'),
+            #             'launch', 'rtabmap.launch.py',
+            #         ])]),
+            #     launch_arguments={
+            #         'use_sim_time' : use_sim_time,
+            #         'rtabmap_args' : rtabmap_args,
+            #         'database_path' : database_path,
+            #         'rgb_topic' : '/scout_mini/zed_node/rgb/image_rect_color',
+            #         'depth_topic' : '/scout_mini/zed_node/depth/depth_registered',
+            #         'camera_info_topic' : '/scout_mini/zed_node/rgb/camera_info',
+            #         'frame_id' : 'base_footprint',
+            #         'approx_sync' : 'true',
+            #         'wait_imu_to_init' : 'false',
+            #         'wait_for_transform' : '0.2',
+            #         'imu_topic' : '/scout_mini/zed_node/imu/data',
+            #         'odom_frame_id' : 'odom',
+            #         'qos' : '2',
+            #         'rtabmapviz' : 'false',
+            #         'rviz' : 'false',
+            #         'sync_queue_size' : '20',
+            #         'topic_queue_size' : '20',
+            #         'localization' : localization}.items()),
 
           
             ]
@@ -146,6 +156,16 @@ def generate_launch_description():
                 name='robot_state_publisher',
                 parameters=[robot_description_param]),
 
+            Node(
+                package='slam_toolbox',
+                executable='sync_slam_toolbox_node',
+                name='slam_toolbox',
+                output='screen',
+                parameters=[
+                    os.path.join(scout_mini_control_dir, 'params', 'slam_toolbox_params.yaml'),
+                    {'use_sim_time': use_sim_time, 'database_path': database_path}
+                ]
+            ),
             # Node(
             #     package='robot_localization',
             #     executable='ekf_node',
@@ -154,31 +174,31 @@ def generate_launch_description():
             #     parameters=[ekf_params]),
             # EKF NODE HAS BEEN CREATING BAD DRIFING PROBLEMS
             
-            IncludeLaunchDescription(
-                PythonLaunchDescriptionSource([
-                    PathJoinSubstitution([
-                        FindPackageShare('rtabmap_launch'),
-                        'launch', 'rtabmap.launch.py',
-                    ])]),
-                launch_arguments={
-                    'use_sim_time' : use_sim_time,
-                    'rtabmap_args' : rtabmap_args,
-                    'database_path' : database_path,
-                    'rgb_topic' : '/scout_mini/zed_node/rgb/image_rect_color',
-                    'depth_topic' : '/scout_mini/zed_node/depth/depth_registered',
-                    'camera_info_topic' : '/scout_mini/zed_node/rgb/camera_info',
-                    'frame_id' : 'base_footprint',
-                    'approx_sync' : 'true',
-                    'wait_imu_to_init' : 'false',
-                    'wait_for_transform' : '0.2',
-                    'imu_topic' : '/scout_mini/zed_node/imu/data',
-                    'odom_frame_id' : 'odom',
-                    'qos' : '1',
-                    'rtabmapviz' : 'false',
-                    'rviz' : 'false',
-                    'sync_queue_size' : '20',
-                    'topic_queue_size' : '20',
-                    'localization' : localization}.items()),
+            # IncludeLaunchDescription(
+            #     PythonLaunchDescriptionSource([
+            #         PathJoinSubstitution([
+            #             FindPackageShare('rtabmap_launch'),
+            #             'launch', 'rtabmap.launch.py',
+            #         ])]),
+            #     launch_arguments={
+            #         'use_sim_time' : use_sim_time,
+            #         'rtabmap_args' : rtabmap_args,
+            #         'database_path' : database_path,
+            #         'rgb_topic' : '/scout_mini/zed_node/rgb/image_rect_color',
+            #         'depth_topic' : '/scout_mini/zed_node/depth/depth_registered',
+            #         'camera_info_topic' : '/scout_mini/zed_node/rgb/camera_info',
+            #         'frame_id' : 'base_footprint',
+            #         'approx_sync' : 'true',
+            #         'wait_imu_to_init' : 'false',
+            #         'wait_for_transform' : '0.2',
+            #         'imu_topic' : '/scout_mini/zed_node/imu/data',
+            #         'odom_frame_id' : 'odom',
+            #         'qos' : '1',
+            #         'rtabmapviz' : 'false',
+            #         'rviz' : 'false',
+            #         'sync_queue_size' : '20',
+            #         'topic_queue_size' : '20',
+            #         'localization' : localization}.items()),
 
           
             ]
